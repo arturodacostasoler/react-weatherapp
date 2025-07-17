@@ -1,34 +1,65 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import axios from 'axios'
+
+//https://es.vite.dev/guide/env-and-mode
+//https://home.openweathermap.org/api_keys
+//https://home.openweathermap.org/users/sign_up
+const API_KEY = import.meta.env.VITE_API_KEY
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [coordinates, setCoordinates] = useState({
+    latitude: 0,
+    longitude: 0
+  })
+
+  const [currenData, setCurrentData] = useState({})
+
+  async function handleLocationSearch(e) {
+    e.preventDefault()
+
+    //https://openweathermap.org/api/geocoding-api#reverse
+    //&limit=1
+    //&units=imperial
+    let response = await axios.get(`http://api.openweathermap.org/geo/1.0/reverse?lat=${coordinates.latitude}&lon=${coordinates.longitude}&appid=${API_KEY}`)
+    //https://openweathermap.org/api/one-call-3#current
+    //&units=imperial
+    // let response = await axios.get(`http://api.openweathermap.org/data/3.0/onecall?lat=${coordinates.latitude}&lon=${coordinates.longitude}&appid=${API_KEY}`)
+
+
+    setCurrentData(response)
+  }
+
+  function handleChange(e) {
+    setCoordinates({ ...coordinates, [e.target.name]: Number(e.target.value) })
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="flex flex-col w-screen h-screen bg-gradient-to-b from-blue-300 to-white">
+      <div className="p-6 mx-auto bg-white rounded-lg shadow-md">
+        <form onSubmit={handleLocationSearch} className="space-y-4">
+          <input placeholder="Latitude"
+            onChange={handleChange}
+            name="latitude"
+            type='number' step="0.01" min="-90" max="90"
+            required
+            className="w-full p-3 text-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input placeholder="Longitude"
+            onChange={handleChange}
+            name="longitude"
+            type='number' step="0.01" min="-180" max="180"
+            required
+            className="w-full p-3 text-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button type="submit"
+            className="w-full py-3 font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+          >Search</button>
+
+        </form>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      {JSON.stringify(currenData)}
+    </div>
   )
 }
 
